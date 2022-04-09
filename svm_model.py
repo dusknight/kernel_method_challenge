@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import optimize
-from sklearn.svm import SVC
+# from sklearn.svm import SVC
 """ SVC and multiSVC """
 
 
@@ -204,6 +204,11 @@ class OneVSRestSVC:
         print(scores)
         return scores.argmax(axis=0)
 
+    def score(self, X, y_true):
+        assert len(y_true) == len(X)
+        y_pred = self.predict(X)
+        return np.mean(y_pred == y_true)
+
 
 class OneOverOneSVC:
     def __init__(self, num_class, C, kernel, epsilon=1e-3):
@@ -241,5 +246,10 @@ class OneOverOneSVC:
             scores[j, :] += (_pred < 0)
         # print(scores)
         return scores.argmax(axis=0)
+
+    def score(self, X, y_true):
+        assert len(y_true) == len(X)
+        y_pred = self.predict(X)
+        return np.mean(y_pred == y_true)
 
 

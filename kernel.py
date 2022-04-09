@@ -33,3 +33,18 @@ class Ghi:
             for j in range(len(Y)):
                 K[i, j] = np.minimum(x[i, :], y[j, :]).sum()
         return K
+
+
+class Poly:
+    def __init__(self, degree=5):
+        self.degree = degree
+
+    def kernel(self, X, Y, gamma=None, coef0=1):
+        if gamma is None:
+            gamma = 1.0 / X.shape[1]
+
+        K = np.dot(X, Y.T, dense_output=True)
+        K *= gamma
+        K += coef0
+        K **= self.degree
+        return K

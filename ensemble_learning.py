@@ -1,18 +1,15 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from kernel import Ghi
-from kernel import RBF
-from svm_model import *
+from kernel import Ghi, RBF, Poly
 from utils import rgb2gray, normalize, flat2img
 from hog_descriptor import hog
 from hsv_descriptor import hsv
 
 from sklearn.model_selection import train_test_split
-from sklearn import svm
+from svm_model import OneOverOneSVC as SVC
 from LBP import Lbp_hist
 from bagofword import BagOfWords2
-from sklearn.preprocessing import StandardScaler
 import sift_bow
 from scipy.stats import mode
 
@@ -99,23 +96,23 @@ print(X_train.shape)
 c = 10.5
 gamma = 1e-3
 k2 = RBF(3.1)
-clf = svm.SVC(C=c, kernel=k2.kernel)
+clf = SVC(C=c, kernel=k2.kernel, num_class=10)
 clf.fit(X_train, y_train)
-print('Overall accuracy on validation set (1000 samples):')
-print(clf.score(X_test, y_test))
+# print('Overall accuracy on validation set (1000 samples):')
+# print(clf.score(X_test, y_test))
 
 
 #%% Cluster 2 HOG + SVM (poly degree 5)
 c = 10.
-clf2 = svm.SVC(C=c, tol=gamma, kernel='poly', degree=6)
+k = Poly(degree=6)
+clf2 = SVC(C=c, epsilon=gamma, kernel=k.kernel, num_class=10)
 clf2.fit(X_train, y_train)
 print('Overall accuracy on validation set (1000 samples):')
 print(clf2.score(X_test, y_test))
 
 
 #%% Cluster 3 KNN
-from sklearn.neighbors import KNeighborsClassifier
-
+from kNN import KNeighborsClassifier
 neigh = KNeighborsClassifier(n_neighbors=15)
 neigh.fit(X_train, y_train)
 print('Overall accuracy on validation set (1000 samples):')
@@ -126,7 +123,9 @@ print(neigh.score(X_test, y_test))
 X_train, X_test_hog, y_train, y_test = train_test_split(bow_hog, Ytr, test_size=0.2, random_state=20)
 c = 1.
 gamma = 1e-3
-clf4 = svm.SVC(C=c, gamma=gamma, kernel='rbf')
+n_features = X_train.shape[1]
+k = RBF(sigma=np.sqrt(n_features * X_train.var()))
+clf4 = SVC(C=c,  kernel=k.kernel, num_class=10)
 clf4.fit(X_train, y_train)
 print('Overall accuracy on validation set (1000 samples):')
 print(clf4.score(X_test_hog, y_test))
@@ -135,7 +134,9 @@ print(clf4.score(X_test_hog, y_test))
 #%% CLuster 5 BOW + sift
 X_train, X_test_sift, y_train, y_test = train_test_split(bow_sift, Ytr, test_size=0.2, random_state=20)
 c = 1.
-clf5 = svm.SVC(C=c, kernel='rbf')
+n_features = X_train.shape[1]
+k = RBF(sigma=np.sqrt(n_features * X_train.var()))
+clf5 = SVC(C=c, kernel=k.kernel, num_class=10)
 clf5.fit(X_train, y_train)
 print('Overall accuracy on validation set (1000 samples):')
 print(clf5.score(X_test_sift, y_test))
